@@ -1,0 +1,18 @@
+# Blueprint de Render — despliega Geny tu Mentor IA como servicio web Node.
+# En Render: New → Blueprint → conecta el repo → detecta este archivo.
+services:
+  - type: web
+    name: geny-tu-mentor-ia
+    runtime: node
+    plan: starter          # 'free' funciona para demo (duerme por inactividad); 'starter' evita cold starts y permite disco
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: DATA_DIR
+        value: /var/data   # los datos viven en el disco persistente de abajo
+      - key: AI_PROVIDER
+        value: free        # Geny funciona out-of-the-box; cámbialo en Ajustes o aquí (anthropic/openai/gemini)
+    disk:
+      name: geny-data
+      mountPath: /var/data
+      sizeGB: 1

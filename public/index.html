@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geny tu Mentor IA — INGRESARIOS</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  
+  <div id="auth-screen" class="auth-container">
+    <div class="auth-box">
+      <div class="logo" style="justify-content: center; margin-bottom: 24px;">
+        <div class="logo-badge">G</div>
+        <div>
+          <div class="logo-title">GENY</div>
+          <div class="logo-sub">TU MENTOR IA</div>
+        </div>
+      </div>
+      <h2 id="auth-title">Iniciar Sesión</h2>
+      <form id="auth-form">
+        <div class="input-group">
+          <label>Email</label>
+          <input type="email" id="auth-email" required placeholder="tu@email.com">
+        </div>
+        <div class="input-group">
+          <label>Contraseña</label>
+          <input type="password" id="auth-password" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn btn-green" style="width: 100%; margin-top: 10px;" id="auth-submit">Entrar</button>
+      </form>
+      <p style="text-align: center; margin-top: 16px; font-size: 13px; color: var(--text-dim);">
+        <span id="auth-toggle-text">¿No tienes cuenta?</span> 
+        <a href="#" id="auth-toggle-btn" style="color: var(--green); text-decoration: none;">Regístrate</a>
+      </p>
+    </div>
+  </div>
+
+  <div id="app-screen" style="display: none; height: 100%; width: 100%;">
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-badge">G</div>
+        <div>
+          <div class="logo-title">GENY</div>
+          <div class="logo-sub">TU MENTOR IA</div>
+        </div>
+      </div>
+      <nav>
+        <button class="nav-btn active" data-view="dashboard">⚡ Dashboard</button>
+        <button class="nav-btn" data-view="nuevo">🎯 Nuevo Trade</button>
+        <button class="nav-btn" data-view="bitacora">📓 Bitácora</button>
+        <button class="nav-btn" data-view="chat">🤖 Geny</button>
+        <button class="nav-btn" data-view="liga">🏆 Liga</button>
+        <button class="nav-btn" data-view="academia">🎓 Academia</button>
+        <button class="nav-btn" data-view="ajustes">⚙️ Ajustes</button>
+        <button class="nav-btn" id="btn-logout" style="margin-top: auto; color: #ff5252;">🚪 Salir</button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="quote">"Eso separa al que sueña<br>del que vive de esto."</div>
+      </div>
+    </aside>
+
+    <main id="main">
+      <!-- Las vistas se renderizan aquí con app.js -->
+    </main>
+  </div>
+
+  <script src="knowledge.js"></script>
+  <script src="api.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
