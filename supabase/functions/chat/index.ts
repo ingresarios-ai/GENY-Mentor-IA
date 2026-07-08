@@ -80,22 +80,43 @@ serve(async (req) => {
       }
     }
 
-    // Call AI
-    const provider = profile.ai_provider || 'free';
-    const key = profile.ai_key || '';
+    // Use global secrets first for a seamless user experience
+    const globalAnthropicKey = Deno.env.get('ANTHROPIC_API_KEY');
+    const globalOpenAIKey = Deno.env.get('OPENAI_API_KEY');
+    const globalGeminiKey = Deno.env.get('GEMINI_API_KEY');
+
+    let provider = 'openai';
+    let key = '';
+    let model = '';
+
+    if (globalAnthropicKey) {
+      provider = 'anthropic';
+      key = globalAnthropicKey;
+      model = 'claude-3-5-sonnet-20240620';
+    } else if (globalOpenAIKey) {
+      provider = 'openai';
+      key = globalOpenAIKey;
+      model = 'gpt-4o';
+    } else if (globalGeminiKey) {
+      provider = 'gemini';
+      key = globalGeminiKey;
+      model = 'gemini-2.5-flash';
+    } else {
+      // Fallback if the admin hasn't set any secrets yet
+      provider = 'free';
+      model = 'openai';
+    }
     
     let url, aiHeaders, aiBody, extract;
 
     const maxTokens = 2048;
 
     if (provider === 'anthropic') {
-      const model = profile.ai_model || 'claude-3-5-sonnet-20240620';
       url = 'https://api.anthropic.com/v1/messages';
       aiHeaders = { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' };
       aiBody = { model, max_tokens: maxTokens, system, messages };
       extract = (d: any) => d.content.map((b: any) => b.text || '').join('');
     } else if (provider === 'gemini') {
-      const model = profile.ai_model || 'gemini-2.5-flash';
       url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
       aiHeaders = { 'content-type': 'application/json' };
       aiBody = {
@@ -107,8 +128,7 @@ serve(async (req) => {
     } else {
       const base = (provider === 'free'
         ? 'https://text.pollinations.ai/openai'
-        : (profile.ai_base_url || 'https://api.openai.com/v1')).replace(/\/+$/, '');
-      const model = profile.ai_model || (provider === 'free' ? 'openai' : 'gpt-4o');
+        : 'https://api.openai.com/v1');
       url = base + '/chat/completions';
       aiHeaders = { 'content-type': 'application/json', ...(key ? { 'Authorization': 'Bearer ' + key } : {}) };
       aiBody = { model, max_tokens: maxTokens, messages: [{ role: 'system', content: system }, ...messages] };
