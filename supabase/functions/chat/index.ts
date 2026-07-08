@@ -81,6 +81,7 @@ serve(async (req) => {
     }
 
     // Use global secrets first for a seamless user experience
+    const globalDeepSeekKey = Deno.env.get('DEEPSEEK_API_KEY');
     const globalAnthropicKey = Deno.env.get('ANTHROPIC_API_KEY');
     const globalOpenAIKey = Deno.env.get('OPENAI_API_KEY');
     const globalGeminiKey = Deno.env.get('GEMINI_API_KEY');
@@ -89,7 +90,11 @@ serve(async (req) => {
     let key = '';
     let model = '';
 
-    if (globalAnthropicKey) {
+    if (globalDeepSeekKey) {
+      provider = 'deepseek';
+      key = globalDeepSeekKey;
+      model = 'deepseek-chat';
+    } else if (globalAnthropicKey) {
       provider = 'anthropic';
       key = globalAnthropicKey;
       model = 'claude-3-5-sonnet-20240620';
@@ -125,6 +130,11 @@ serve(async (req) => {
         generationConfig: { maxOutputTokens: maxTokens }
       };
       extract = (d: any) => (d.candidates?.[0]?.content?.parts || []).map((p: any) => p.text || '').join('');
+    } else if (provider === 'deepseek') {
+      url = 'https://api.deepseek.com/chat/completions';
+      aiHeaders = { 'content-type': 'application/json', 'Authorization': 'Bearer ' + key };
+      aiBody = { model, max_tokens: maxTokens, messages: [{ role: 'system', content: system }, ...messages] };
+      extract = (d: any) => d.choices?.[0]?.message?.content || '';
     } else {
       const base = (provider === 'free'
         ? 'https://text.pollinations.ai/openai'
