@@ -110,6 +110,22 @@ document.addEventListener('DOMContentLoaded', () => {
         // Save phone to profile (the trigger already created the row)
         if (data?.user?.id) {
           await sb.from('profiles').update({ ghl_email: email, phone: fullPhone }).eq('id', data.user.id);
+
+          // Push data to GHL webhook
+          try {
+            const { data: { session } } = await sb.auth.getSession();
+            if (session) {
+              await fetch(_supabaseUrl + '/functions/v1/ghl-sync', {
+                method: 'POST',
+                headers: {
+                  'Authorization': 'Bearer ' + session.access_token,
+                  'Content-Type': 'application/json'
+                }
+              });
+            }
+          } catch (whErr) {
+            console.warn('Webhook sync failed (non-blocking):', whErr);
+          }
         }
 
         alert('Registro exitoso. Iniciando sesión...');

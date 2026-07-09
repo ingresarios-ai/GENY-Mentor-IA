@@ -210,6 +210,7 @@ serve(async (req) => {
 
     const payload = {
       email: profile.ghl_email,
+      phone: profile.phone || '',
       userId: user.id,
       tags,
       ...fields
