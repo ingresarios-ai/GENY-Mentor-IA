@@ -209,6 +209,7 @@ serve(async (req) => {
     }
 
     const payload = {
+      name: profile.nombre || '',
       email: profile.ghl_email,
       phone: profile.phone || '',
       userId: user.id,

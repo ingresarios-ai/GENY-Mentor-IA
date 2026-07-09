@@ -83,6 +83,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const { error } = await sb.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
+        // Validate name
+        const fullName = document.getElementById('auth-name').value.trim();
+        if (!fullName || fullName.length < 2) {
+          throw new Error('Ingresa tu nombre completo.');
+        }
+
         // Validate confirm password
         const confirmPw = document.getElementById('auth-password-confirm').value;
         if (password !== confirmPw) {
@@ -107,9 +113,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const { data, error } = await sb.auth.signUp({ email, password });
         if (error) throw error;
 
-        // Save phone to profile (the trigger already created the row)
+        // Save name, email & phone to profile
         if (data?.user?.id) {
-          await sb.from('profiles').update({ ghl_email: email, phone: fullPhone }).eq('id', data.user.id);
+          await sb.from('profiles').update({ nombre: fullName, ghl_email: email, phone: fullPhone }).eq('id', data.user.id);
 
           // Push data to GHL webhook
           try {
@@ -146,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('auth-toggle-text').innerText = '¿Ya tienes cuenta?';
       e.target.innerText = 'Inicia Sesión';
       document.getElementById('auth-submit').innerText = 'Registrarse';
+      document.getElementById('name-group').style.display = 'block';
       document.getElementById('confirm-group').style.display = 'block';
       document.getElementById('phone-group').style.display = 'block';
     } else {
@@ -154,6 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('auth-toggle-text').innerText = '¿No tienes cuenta?';
       e.target.innerText = 'Regístrate';
       document.getElementById('auth-submit').innerText = 'Entrar';
+      document.getElementById('name-group').style.display = 'none';
       document.getElementById('confirm-group').style.display = 'none';
       document.getElementById('phone-group').style.display = 'none';
     }
