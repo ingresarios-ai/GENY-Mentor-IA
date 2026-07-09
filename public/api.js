@@ -1,11 +1,11 @@
-const supabaseUrl = 'https://trfuismpiuercyfbtygb.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRyZnVpc21waXVlcmN5ZmJ0eWdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NjE4ODEsImV4cCI6MjA5OTAzNzg4MX0.HccXcq3afxTQU1OnYu5cLn2isUK2lKYbowsXH6wugVo';
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+const _supabaseUrl = 'https://trfuismpiuercyfbtygb.supabase.co';
+const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRyZnVpc21waXVlcmN5ZmJ0eWdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NjE4ODEsImV4cCI6MjA5OTAzNzg4MX0.HccXcq3afxTQU1OnYu5cLn2isUK2lKYbowsXH6wugVo';
+const sb = window.supabase.createClient(_supabaseUrl, _supabaseKey);
 
 let currentUser = null;
 
 async function checkAuth() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await sb.auth.getSession();
   if (session) {
     currentUser = session.user;
     showApp();
@@ -13,7 +13,7 @@ async function checkAuth() {
     showAuth();
   }
 
-  supabase.auth.onAuthStateChange((event, session) => {
+  sb.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
       if (session && (!currentUser || currentUser.id !== session.user.id)) {
         currentUser = session.user;
@@ -53,10 +53,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await sb.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await sb.auth.signUp({ email, password });
         if (error) throw error;
         alert('Registro exitoso. Iniciando sesión...');
       }
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btn-logout').addEventListener('click', async () => {
-    await supabase.auth.signOut();
+    await sb.auth.signOut();
   });
 });
 
@@ -99,56 +99,56 @@ window.api = async function(path, opts = {}) {
   try {
     if (path === '/config') {
       if (method === 'GET') {
-        let { data } = await supabase.from('profiles').select().eq('id', uid).single();
+        let { data } = await sb.from('profiles').select().eq('id', uid).single();
         return data || { modo: '' };
       } else {
-        await supabase.from('profiles').upsert({ id: uid, ...body });
+        await sb.from('profiles').upsert({ id: uid, ...body });
         return { ok: true };
       }
     }
 
     if (path === '/trades') {
       if (method === 'GET') {
-        const { data } = await supabase.from('trades').select().eq('user_id', uid).order('created_at', { ascending: false });
+        const { data } = await sb.from('trades').select().eq('user_id', uid).order('created_at', { ascending: false });
         return data || [];
       } else {
         const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
         const t = { ...body, id, user_id: uid, status: body.status || 'abierto' };
-        await supabase.from('trades').insert(t);
+        await sb.from('trades').insert(t);
         return t;
       }
     }
     if (path.startsWith('/trades/')) {
       const id = path.split('/')[2];
       if (method === 'PUT') {
-        await supabase.from('trades').update(body).eq('id', id).eq('user_id', uid);
+        await sb.from('trades').update(body).eq('id', id).eq('user_id', uid);
         return { id, ...body };
       } else if (method === 'DELETE') {
-        await supabase.from('trades').delete().eq('id', id).eq('user_id', uid);
+        await sb.from('trades').delete().eq('id', id).eq('user_id', uid);
         return { ok: true };
       }
     }
 
     if (path === '/reto21') {
       if (method === 'GET') {
-        const { data } = await supabase.from('reto21').select().eq('user_id', uid).single();
+        const { data } = await sb.from('reto21').select().eq('user_id', uid).single();
         return data || { startDate: null, days: {} };
       } else {
         const { action, date, note } = body;
-        const { data } = await supabase.from('reto21').select().eq('user_id', uid).single();
+        const { data } = await sb.from('reto21').select().eq('user_id', uid).single();
         let r = data || { startDate: null, days: {} };
         if (action === 'start') r.start_date = date;
         else if (action === 'reset') { r.start_date = null; r.days = {}; }
         else if (action === 'check') r.days[date] = true;
         else if (action === 'uncheck') delete r.days[date];
-        await supabase.from('reto21').upsert({ user_id: uid, ...r });
+        await sb.from('reto21').upsert({ user_id: uid, ...r });
         return { startDate: r.start_date, days: r.days };
       }
     }
 
     if (path.startsWith('/game')) {
       const ESCUDO_COSTO = 200, ESCUDO_MAX = 2, APUESTA_MONTO = 200;
-      let { data: game } = await supabase.from('game').select().eq('user_id', uid).single();
+      let { data: game } = await sb.from('game').select().eq('user_id', uid).single();
       if (!game) game = { xp: 0, xp_total: 0, escudos: 0, escudo_dates: [], activity: {}, awarded_keys: [], wager: null, last_wager: null, badges: [], weekly_xp: {}, mental_edge: null, chat_count: 0, share_count: 0, apuestas_ganadas: 0, racha_max: 0 };
       
       const localDateStr = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -201,7 +201,7 @@ window.api = async function(path, opts = {}) {
       if (path === '/game' && method === 'GET') {
         const streak = computeStreak(game);
         if (streak > game.racha_max) game.racha_max = streak;
-        await supabase.from('game').upsert({ user_id: uid, ...game });
+        await sb.from('game').upsert({ user_id: uid, ...game });
         return { ...game, escudoDates: game.escudo_dates, xpTotal: game.xp_total, awardedKeys: game.awarded_keys, lastWager: game.last_wager, weeklyXp: game.weekly_xp, mentalEdge: game.mental_edge, apuestasGanadas: game.apuestas_ganadas, rachaMax: game.racha_max, streak, activeToday: !!game.activity[localDateStr(new Date())], today: localDateStr(new Date()), escudoCosto: ESCUDO_COSTO, escudoMax: ESCUDO_MAX, apuestaMonto: APUESTA_MONTO };
       }
 
@@ -220,14 +220,14 @@ window.api = async function(path, opts = {}) {
         }
         const streak = computeStreak(game);
         if (streak > game.racha_max) game.racha_max = streak;
-        await supabase.from('game').upsert({ user_id: uid, ...game });
+        await sb.from('game').upsert({ user_id: uid, ...game });
         return { ...game, escudoDates: game.escudo_dates, xpTotal: game.xp_total, awardedKeys: game.awarded_keys, lastWager: game.last_wager, weeklyXp: game.weekly_xp, mentalEdge: game.mental_edge, apuestasGanadas: game.apuestas_ganadas, rachaMax: game.racha_max, streak, activeToday: !!game.activity[localDateStr(new Date())], today: localDateStr(new Date()), escudoCosto: ESCUDO_COSTO, escudoMax: ESCUDO_MAX, apuestaMonto: APUESTA_MONTO, awarded };
       }
 
       if (path === '/game/badges') {
         const ids = Array.isArray(body.ids) ? body.ids : [];
         ids.forEach(id => { if (!game.badges.includes(id)) game.badges.push(id); });
-        await supabase.from('game').upsert({ user_id: uid, ...game });
+        await sb.from('game').upsert({ user_id: uid, ...game });
         const streak = computeStreak(game);
         return { ...game, escudoDates: game.escudo_dates, xpTotal: game.xp_total, awardedKeys: game.awarded_keys, lastWager: game.last_wager, weeklyXp: game.weekly_xp, mentalEdge: game.mental_edge, apuestasGanadas: game.apuestas_ganadas, rachaMax: game.racha_max, streak, activeToday: !!game.activity[localDateStr(new Date())], today: localDateStr(new Date()), escudoCosto: ESCUDO_COSTO, escudoMax: ESCUDO_MAX, apuestaMonto: APUESTA_MONTO };
       }
@@ -235,18 +235,18 @@ window.api = async function(path, opts = {}) {
 
     if (path === '/videos') {
       if (method === 'GET') {
-        const { data } = await supabase.from('videos').select().eq('user_id', uid).order('created_at', { ascending: false });
+        const { data } = await sb.from('videos').select().eq('user_id', uid).order('created_at', { ascending: false });
         return data || [];
       } else {
         const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
         const v = { id, user_id: uid, titulo: body.titulo, yt_id: body.ytId, categoria: body.categoria };
-        await supabase.from('videos').insert(v);
+        await sb.from('videos').insert(v);
         return { ytId: v.yt_id, ...v };
       }
     }
     if (path.startsWith('/videos/')) {
       const id = path.split('/')[2];
-      await supabase.from('videos').delete().eq('id', id).eq('user_id', uid);
+      await sb.from('videos').delete().eq('id', id).eq('user_id', uid);
       return { ok: true };
     }
 
@@ -255,7 +255,7 @@ window.api = async function(path, opts = {}) {
     }
 
     if (path === '/chat' || path === '/api/chat') {
-      const { data, error } = await supabase.functions.invoke('chat', {
+      const { data, error } = await sb.functions.invoke('chat', {
         body
       });
       if (error) throw error;
@@ -263,7 +263,7 @@ window.api = async function(path, opts = {}) {
     }
 
     if (path.startsWith('/ghl')) {
-      const { data, error } = await supabase.functions.invoke('ghl-sync', {
+      const { data, error } = await sb.functions.invoke('ghl-sync', {
         body
       });
       if (error) throw error;
