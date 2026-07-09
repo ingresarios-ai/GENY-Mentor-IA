@@ -40,9 +40,11 @@ function showApp() {
 document.addEventListener('DOMContentLoaded', () => {
   checkAuth();
 
+  let isLoginMode = true;
+
   document.getElementById('auth-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const isLogin = document.getElementById('auth-title').innerText === 'Iniciar Sesión';
+    const isLogin = isLoginMode;
     const email = document.getElementById('auth-email').value;
     const password = document.getElementById('auth-password').value;
     const btn = document.getElementById('auth-submit');
@@ -68,13 +70,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('auth-toggle-btn').addEventListener('click', (e) => {
     e.preventDefault();
-    const isLogin = document.getElementById('auth-title').innerText === 'Iniciar Sesión';
-    if (isLogin) {
+    if (isLoginMode) {
+      isLoginMode = false;
       document.getElementById('auth-title').innerText = 'Registro';
       document.getElementById('auth-toggle-text').innerText = '¿Ya tienes cuenta?';
       e.target.innerText = 'Inicia Sesión';
       document.getElementById('auth-submit').innerText = 'Registrarse';
     } else {
+      isLoginMode = true;
       document.getElementById('auth-title').innerText = 'Iniciar Sesión';
       document.getElementById('auth-toggle-text').innerText = '¿No tienes cuenta?';
       e.target.innerText = 'Regístrate';
