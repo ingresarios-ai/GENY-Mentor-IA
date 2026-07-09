@@ -30,8 +30,8 @@
         </div>
         <div class="input-group" id="phone-group" style="display: none;">
           <label>Teléfono</label>
-          <div style="display: flex; gap: 6px;">
-            <select id="auth-country-code" style="width: 110px; padding: 10px 6px; border-radius: 8px; background: var(--bg-card); color: var(--text); border: 1px solid rgba(255,255,255,0.1); font-size: 14px;">
+          <div class="phone-row">
+            <select id="auth-country-code">
               <option value="+52">🇲🇽 +52</option>
               <option value="+57">🇨🇴 +57</option>
               <option value="+1">🇺🇸 +1</option>
@@ -51,7 +51,7 @@
               <option value="+504">🇭🇳 +504</option>
               <option value="+505">🇳🇮 +505</option>
             </select>
-            <input type="tel" id="auth-phone" placeholder="10 dígitos" style="flex: 1;">
+            <input type="tel" id="auth-phone" placeholder="10 dígitos">
           </div>
         </div>
         <button type="submit" class="btn btn-green" style="width: 100%; margin-top: 10px;" id="auth-submit">Entrar</button>
