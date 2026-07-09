@@ -83,6 +83,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const { error } = await sb.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
+        // Validate confirm password
+        const confirmPw = document.getElementById('auth-password-confirm').value;
+        if (password !== confirmPw) {
+          throw new Error('Las contraseñas no coinciden.');
+        }
+        if (password.length < 6) {
+          throw new Error('La contraseña debe tener al menos 6 caracteres.');
+        }
+
         // Validate phone
         const phoneRaw = document.getElementById('auth-phone').value.replace(/\D/g, '');
         if (!phoneRaw || phoneRaw.length < 7) {
@@ -121,6 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('auth-toggle-text').innerText = '¿Ya tienes cuenta?';
       e.target.innerText = 'Inicia Sesión';
       document.getElementById('auth-submit').innerText = 'Registrarse';
+      document.getElementById('confirm-group').style.display = 'block';
       document.getElementById('phone-group').style.display = 'block';
     } else {
       isLoginMode = true;
@@ -128,9 +138,30 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('auth-toggle-text').innerText = '¿No tienes cuenta?';
       e.target.innerText = 'Regístrate';
       document.getElementById('auth-submit').innerText = 'Entrar';
+      document.getElementById('confirm-group').style.display = 'none';
       document.getElementById('phone-group').style.display = 'none';
     }
   });
+
+  // Eye toggle for password visibility
+  function setupEyeToggle(toggleId, inputId, eyeOnId, eyeOffId) {
+    document.getElementById(toggleId).addEventListener('click', () => {
+      const input = document.getElementById(inputId);
+      const eyeOn = document.getElementById(eyeOnId);
+      const eyeOff = document.getElementById(eyeOffId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        eyeOn.style.display = 'none';
+        eyeOff.style.display = 'block';
+      } else {
+        input.type = 'password';
+        eyeOn.style.display = 'block';
+        eyeOff.style.display = 'none';
+      }
+    });
+  }
+  setupEyeToggle('eye-toggle-1', 'auth-password', 'eye-icon-1', 'eye-off-icon-1');
+  setupEyeToggle('eye-toggle-2', 'auth-password-confirm', 'eye-icon-2', 'eye-off-icon-2');
 
   document.getElementById('btn-logout').addEventListener('click', async () => {
     await sb.auth.signOut();

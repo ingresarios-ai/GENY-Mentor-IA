@@ -550,6 +550,34 @@ textarea { resize: vertical; min-height: 70px; }
   min-width: 0;
 }
 
+/* Password eye toggle */
+.password-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.password-wrap input {
+  padding-right: 44px;
+}
+.eye-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color .2s;
+}
+.eye-toggle:hover {
+  color: var(--green);
+}
+
 @media (max-width: 480px) {
   .auth-box {
     margin: 16px;
