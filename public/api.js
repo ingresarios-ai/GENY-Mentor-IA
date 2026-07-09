@@ -42,6 +42,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let isLoginMode = true;
 
+  // --- Auto-detect country code from IP ---
+  const ISO_TO_CODE = {
+    MX:'+52', CO:'+57', US:'+1', CA:'+1', ES:'+34', AR:'+54', PE:'+51',
+    CL:'+56', EC:'+593', VE:'+58', GT:'+502', CR:'+506', PA:'+507',
+    BO:'+591', PY:'+595', UY:'+598', SV:'+503', HN:'+504', NI:'+505'
+  };
+  (async () => {
+    try {
+      const res = await fetch('https://cloudflare.com/cdn-cgi/trace');
+      const txt = await res.text();
+      const m = txt.match(/loc=(\w{2})/);
+      if (m) {
+        const code = ISO_TO_CODE[m[1].toUpperCase()];
+        if (code) document.getElementById('auth-country-code').value = code;
+      }
+    } catch(e) {
+      try {
+        const res = await fetch('https://api.country.is');
+        const d = await res.json();
+        if (d.country) {
+          const code = ISO_TO_CODE[d.country.toUpperCase()];
+          if (code) document.getElementById('auth-country-code').value = code;
+        }
+      } catch(e2) {}
+    }
+  })();
+
   document.getElementById('auth-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const isLogin = isLoginMode;
@@ -56,8 +83,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const { error } = await sb.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
-        const { error } = await sb.auth.signUp({ email, password });
+        // Validate phone
+        const phoneRaw = document.getElementById('auth-phone').value.replace(/\D/g, '');
+        if (!phoneRaw || phoneRaw.length < 7) {
+          throw new Error('Ingresa un número de teléfono válido (mínimo 7 dígitos).');
+        }
+        const countryCode = document.getElementById('auth-country-code').value;
+        let fullPhone = countryCode + phoneRaw;
+        // Mexican numbers: add '1' after +52 if missing
+        if (fullPhone.startsWith('+52') && !fullPhone.startsWith('+521')) {
+          fullPhone = '+521' + fullPhone.slice(3);
+        }
+
+        const { data, error } = await sb.auth.signUp({ email, password });
         if (error) throw error;
+
+        // Save phone to profile (the trigger already created the row)
+        if (data?.user?.id) {
+          await sb.from('profiles').update({ ghl_email: email, phone: fullPhone }).eq('id', data.user.id);
+        }
+
         alert('Registro exitoso. Iniciando sesión...');
       }
     } catch (err) {
@@ -76,12 +121,14 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('auth-toggle-text').innerText = '¿Ya tienes cuenta?';
       e.target.innerText = 'Inicia Sesión';
       document.getElementById('auth-submit').innerText = 'Registrarse';
+      document.getElementById('phone-group').style.display = 'block';
     } else {
       isLoginMode = true;
       document.getElementById('auth-title').innerText = 'Iniciar Sesión';
       document.getElementById('auth-toggle-text').innerText = '¿No tienes cuenta?';
       e.target.innerText = 'Regístrate';
       document.getElementById('auth-submit').innerText = 'Entrar';
+      document.getElementById('phone-group').style.display = 'none';
     }
   });
 
