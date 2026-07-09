@@ -352,7 +352,17 @@ window.api = async function(path, opts = {}) {
       const { data, error } = await sb.functions.invoke('chat', {
         body
       });
-      if (error) throw error;
+      if (error) {
+        // Try to extract the actual error message from the response
+        let detail = error.message;
+        try {
+          if (error.context) {
+            const errBody = await error.context.json();
+            detail = errBody.error || detail;
+          }
+        } catch (_) {}
+        return { error: detail };
+      }
       return data;
     }
 
