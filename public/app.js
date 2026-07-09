@@ -1063,20 +1063,18 @@ window.enviarChat = async () => {
   $('#chat-send').disabled = true;
 
   try {
-    const r = await fetch('/api/chat', {
+    const data = await window.api('/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         messages: state.chat.map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.content })),
         includeJournal: $('#chat-journal').checked
       })
     });
-    const data = await r.json();
     document.getElementById('thinking').remove();
-    if (!r.ok) {
+    if (data.error) {
       const errText = data.error === 'no_key'
         ? '⚠️ Aún no tengo motor de IA. Ve a ⚙️ Ajustes → "Motor de IA de Geny", conecta tu proveedor (Claude, GPT, Gemini o compatible) y vuelve.'
-        : `⚠️ Error del motor de IA: ${data.detail || data.error}`;
+        : `⚠️ Error del motor de IA: ${data.error}`;
       box.innerHTML += `<div class="msg ai"><div class="msg-label">GENY</div>${esc(errText)}</div>`;
       state.chat.pop(); // no guardar el turno fallido
     } else {
